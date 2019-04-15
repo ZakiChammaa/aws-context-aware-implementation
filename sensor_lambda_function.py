@@ -19,7 +19,6 @@ def lambda_handler(event, context):
 
     logger.info("Loading sensor information...")
     sensor_info = data_store.get({'SensorID': sensor_id}, 'Sensors')
-    node_info = data_store.get({'NodeID': sensor_info['NodeID']}, 'Nodes')
 
     sensor = SensorFactory.new_sensor(
         sensor_info['SensorID'], 
@@ -27,7 +26,7 @@ def lambda_handler(event, context):
         sensor_info['MaxValue'],
         sensor_info['MinValue'],
         sensor_info['Unit'],
-        node_info['RoomID']
+        sensor_info['RoomID']
     )
 
     logger.info("Sensor information loaded successfully!")

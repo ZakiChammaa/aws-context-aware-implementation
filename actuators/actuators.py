@@ -7,7 +7,7 @@ class Actuator():
     # def is_actuator(actuator_type):
     #     return False
     
-    def load_actuator_info(self, data_store, action, node_id):
+    def load_actuator_info(self, data_store, action, room_id):
         actuator_ids = []
         action_filter = {
             'Action': {
@@ -27,8 +27,8 @@ class Actuator():
                 'AttributeValueList': actuator_ids,
                 'ComparisonOperator': 'IN' 
             },
-            'NodeID': {
-                'AttributeValueList': [node_id],
+            'RoomID': {
+                'AttributeValueList': [room_id],
                 'ComparisonOperator': 'IN' 
             }
         }

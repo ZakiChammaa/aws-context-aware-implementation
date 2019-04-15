@@ -109,8 +109,8 @@ if __name__ == "ContextModule":
                 "SensorType": {
                     "S": "door_in"
                 },
-                "Location": {
-                    "S": "conference1"
+                "RoomID": {
+                    "S": "R1"
                 }
                 },
                 "SequenceNumber": "74807100000000013576980822",

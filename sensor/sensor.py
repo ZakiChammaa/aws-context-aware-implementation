@@ -33,7 +33,7 @@ class TemperatureSensor(Sensor):
                 item['Value'] = (item['Value'] * 1.8) + 32
             elif unit_policy.lower() == 'celsius':
                 item['Value'] = (item['Value'] - 32) * (5/9)
-        item['Location'] = self.location
+        item['RoomID'] = self.location
         item['SensorType'] = self.sensor_type
 
 class HumiditySensor(Sensor):
@@ -42,7 +42,7 @@ class HumiditySensor(Sensor):
         return sensor_type.lower() == "humidity"
     
     def transform(self, item, unit_policy):
-        item['Location'] = self.location
+        item['RoomID'] = self.location
         item['SensorType'] = self.sensor_type
 
 class DoorSensor(Sensor):
@@ -51,7 +51,7 @@ class DoorSensor(Sensor):
         return sensor_type.lower() == "door"
     
     def transform(self, item, unit_policy):
-        item['Location'] = self.location
+        item['RoomID'] = self.location
         if "in" in self.sensor_id:
             item['SensorType'] = self.sensor_type + "_in"
         elif "out" in self.sensor_id:

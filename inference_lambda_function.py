@@ -134,7 +134,7 @@ def get_current_preferences(item, data_store):
     if user_id:
         preference_filter = {
             "UserID": user_id,
-            "RoomID": item["Location"]
+            "RoomID": item["RoomID"]
         }
         return data_store.get(preference_filter, "Preferences")
     return {}

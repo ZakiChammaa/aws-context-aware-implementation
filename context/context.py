@@ -4,7 +4,7 @@ class Context:
     def __init__(self, sensor_reading):
         self.sensor_type = sensor_reading['SensorType']
         self.sensor_value = sensor_reading['Value']
-        self.sensor_location = sensor_reading['Location']
+        self.sensor_location = sensor_reading['RoomID']
         self.sensor_timestamp = sensor_reading['Timestamp']
         self.user_id = sensor_reading['UserID']
     
@@ -43,7 +43,7 @@ class Context:
         return {
             'Timestamp': self.sensor_timestamp,
             'SensorType': self.sensor_type.lower(),
-            'Location': self.sensor_location,
+            'RoomID': self.sensor_location,
             'Value': self.sensor_value,
             'UserID': self.user_id
         }

@@ -11,7 +11,7 @@ def lambda_handler(event, context):
 
     for action in actions:
         actuator_obj = Actuator()
-        actuator_info = actuator_obj.load_actuator_info(data_store, action, 'node1')[0]
+        actuator_info = actuator_obj.load_actuator_info(data_store, action, 'R1')[0]
         current_state = actuator_info["CurrentState"]
         if current_state != action:
             actuator_id = actuator_info["ActuatorID"]
