@@ -1,0 +1,8 @@
+__pycache__/
+.vscode/
+virtual/
+actuators/__pycache__/
+context/__pycache__/
+data_store/__pycache__/
+sensor/__pycache__/
+

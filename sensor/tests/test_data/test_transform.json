@@ -1,0 +1,26 @@
+[
+    {
+        "unit": "celsius",
+        "unit_policy": "fahrenheit",
+        "input_value": 10,
+        "expected_value": 50
+    },
+    {
+        "unit": "fahrenheit",
+        "unit_policy": "celsius",
+        "input_value": 50,
+        "expected_value": 10
+    },
+    {
+        "unit": "fahrenheit",
+        "unit_policy": "fahrenheit",
+        "input_value": 50,
+        "expected_value": 50
+    },
+    {
+        "unit": "celsius",
+        "unit_policy": "celsius",
+        "input_value": 10,
+        "expected_value": 10
+    }
+]

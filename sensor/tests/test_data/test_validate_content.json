@@ -1,0 +1,20 @@
+[
+    {
+        "item": {
+            "Value": 10
+        },
+        "expected_result": true
+    },
+    {
+        "item": {
+            "Value": -21
+        },
+        "expected_result": false
+    },
+    {
+        "item": {
+            "Value": 51
+        },
+        "expected_result": false
+    }
+]

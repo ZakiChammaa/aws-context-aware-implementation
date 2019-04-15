@@ -1,0 +1,30 @@
+[
+    {
+        "id": 1,
+        "type": "syntax",
+        "affected_instances": [
+            "all"
+        ],
+        "body": {
+            "outer": {
+                "first": "{",
+                "last": "}"
+            },
+            "inner": {}
+        }
+    },
+    {
+        "id": 2,
+        "type": "retention",
+        "affected_instances": [
+            "temperature",
+            "humidity"
+        ],
+        "body": {
+            "ttl": {
+                "value": 15,
+                "unit": "minutes"
+            }
+        }
+    }
+]
