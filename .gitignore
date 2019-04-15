@@ -5,4 +5,4 @@ actuators/__pycache__/
 context/__pycache__/
 data_store/__pycache__/
 sensor/__pycache__/
-
+settings.py
