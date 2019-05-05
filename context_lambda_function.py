@@ -1,8 +1,7 @@
-import sys
-from context.context import Context
-from datetime import datetime
 import json
 import logging
+from context.context import Context
+from datetime import datetime
 from settings import AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, POLICIES_LOCATION
 from data_store.data_store_factory import DataStoreFactory
 
@@ -94,6 +93,8 @@ def get_context_policies(policies_location, policy_type=None):
 
 
 if __name__ == "ContextModule":
+    import sys
+
     now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     event = {
         "Records": [

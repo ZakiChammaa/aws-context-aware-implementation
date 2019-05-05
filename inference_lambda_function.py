@@ -30,84 +30,70 @@ def lambda_handler(event, context):
                 + str(e)
             )
 
-        if context_instance and int(context_instance["Value"]) == 1:
+        logger.info("Updating active users in the database...")
+        try:
+            manage_users(context_instance, data_store)
+            logger.info("Active users successfully updated!")
+        except Exception as e:
+            logger.error(
+                "The following exception occured while updating active users: " + str(e)
+            )
+            logger.info("Skipping this event...")
+            continue
 
-            logger.info("Updating active users in the database...")
+        logger.info("Getting the current preferences from the database...")
+        try:
+            preferences = get_current_preferences(context_instance, data_store)
+        except Exception as e:
+            logger.error(
+                "The following exception occured while getting the current preferences: "
+                + str(e)
+            )
+            logger.info("Skipping this event...")
+            continue
+
+        if preferences:
             try:
-                manage_users(context_instance, data_store)
-                logger.info("Active users successfully updated!")
+                logger.info("Running inference engine with the current preferences...")
+                inferred_data = {
+                    "temperature": int(preferences["Temperature"]),
+                    "light": preferences["Light"].lower(),
+                    "drape": preferences["Drape"].lower(),
+                }
+                logger.info("Inference engine run successfully!")
             except Exception as e:
                 logger.error(
-                    "The following exception occured while updating active users: "
+                    "The following exception occured while running the inference engine: "
                     + str(e)
                 )
                 logger.info("Skipping this event...")
                 continue
 
-            logger.info("Getting the current preferences from the database...")
+            logger.info("Sending the inference results to the adaptation component...")
             try:
-                preferences = get_current_preferences(context_instance, data_store)
+                session = boto3.Session(AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY)
+                lambda_client = session.client("lambda", "us-east-1")
+                lambda_client.invoke(
+                    FunctionName="ReactionModule",
+                    InvocationType="Event",
+                    Payload=json.dumps(inferred_data),
+                )
+                logger.info("Inference results sent successfully!")
             except Exception as e:
                 logger.error(
-                    "The following exception occured while getting the current preferences: "
+                    "The following exception occured while sending the results to the adaptation component: "
                     + str(e)
                 )
                 logger.info("Skipping this event...")
                 continue
 
-            if preferences:
-                result = []
-                try:
-                    logger.info("Running Contelog with the current preferences...")
-                    payload = {
-                        "temperature": preferences["Temperature"],
-                        "light": preferences["Light"].lower(),
-                        "drape": preferences["Drape"].lower(),
-                    }
-                    result = run(ENGINE_ADDRESS, payload)
-                    logger.info("Contelog run successfully!")
-                except Exception as e:
-                    logger.error(
-                        "The following exception occured while running Contelog: "
-                        + str(e)
-                    )
-                    logger.info("Skipping this event...")
-                    continue
-
-                logger.info(
-                    "Sending the inference results to the adaptation component..."
-                )
-                try:
-                    session = boto3.Session(AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY)
-                    lambda_client = session.client("lambda", "us-east-1")
-                    lambda_client.invoke(
-                        FunctionName="ReactionModule",
-                        InvocationType="Event",
-                        Payload=json.dumps(result),
-                    )
-                    logger.info("Inference results sent successfully!")
-                except Exception as e:
-                    logger.error(
-                        "The following exception occured while sending the results to the adaptation component: "
-                        + str(e)
-                    )
-                    logger.info("Skipping this event...")
-                    continue
-
-
-# def run(engine_address, payload):
-#     r = requests.get(engine_address, params=payload)
-#     return json.loads(r.text)
-
-def run(engine_address, payload):
-    return 0
 
 def manage_users(item, data_store):
 
-    if "in" in item["SensorType"] and int(item["Value"]) == 1:
-        to_store = {"UserID": int(item["UserID"]), "Timestamp": item["Timestamp"]}
+    if "EntryTime" in item.keys():
+        to_store = {"UserID": int(item["UserID"]), "Timestamp": item["EntryTime"]}
         data_store.put([to_store], "ActiveUsers")
-    elif "out" in item["SensorType"] and int(item["Value"]) == 1:
+    elif "ExitTime" in item.keys():
         delete_filter = {"UserID": int(item["UserID"])}
         data_store.delete(delete_filter, "ActiveUsers")
 
@@ -127,33 +113,51 @@ def get_current_preferences(item, data_store):
         print(e)
         pass
 
-    primary, secondary = [], []
+    max_scl = max(u["SCL"] for u in users)
+    high_users = []
     for user in users:
-        timestamp = [
-            u["Timestamp"] for u in active_users if u["UserID"] == user["UserID"]
-        ][0]
-        if user["UserType"] == "Primary":
-            primary.append(
-                (int(user["UserID"]), datetime.strptime(timestamp, "%Y-%m-%d %H:%M:%S"))
-            )
-        elif user["UserType"] == "Secondary":
-            secondary.append(
-                (int(user["UserID"]), datetime.strptime(timestamp, "%Y-%m-%d %H:%M:%S"))
-            )
+        if user["SCL"] == max_scl:
+            for active_user in active_users:
+                if active_user["UserID"] == user["UserID"]:
+                    user["Timestamp"] = active_user["Timestamp"]
+            high_users.append(user)
 
-    user_id = None
-    if len(primary) == 1:
-        user_id = primary[0][0]
-    elif len(primary) > 1:
-        primary.sort(key=lambda u: u[1])
-        user_id = primary[0][0]
-    elif len(primary) == 0:
-        if len(secondary) == 1:
-            user_id = secondary[0][0]
-        elif len(secondary) > 1:
-            secondary.sort(key=lambda u: u[1])
-            user_id = secondary[0][0]
-    if user_id:
-        preference_filter = {"UserID": user_id, "RoomID": item["RoomID"]}
+    top_user = {}
+    if len(high_users) > 0:
+        top_user = sorted(high_users, key=lambda k: k["Timestamp"], reverse=False)[0]
+    if top_user:
+        preference_filter = {"UserID": top_user["UserID"], "RoomID": item["RoomID"]}
         return data_store.get(preference_filter, "Preferences")
     return {}
+
+
+if __name__ == "InferenceModule":
+    import sys
+
+    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    event = {
+        "Records": [
+            {
+                "eventID": "11e7236a41d86161782e45c49a88f407",
+                "eventName": "INSERT",
+                "eventVersion": "1.1",
+                "eventSource": "aws:dynamodb",
+                "awsRegion": "us-east-1",
+                "dynamodb": {
+                    "ApproximateCreationDateTime": 1553375417,
+                    "Keys": {"Timestamp": {"S": now}},
+                    "NewImage": {
+                        "ExitTime": {"S": now},
+                        "UserID": {"S": "3"},
+                        "Timestamp": {"S": now},
+                        "RoomID": {"S": "R1"},
+                    },
+                    "SequenceNumber": "978794700000000009513538367",
+                    "SizeBytes": 102,
+                    "StreamViewType": "NEW_AND_OLD_IMAGES",
+                },
+                "eventSourceARN": "arn:aws:dynamodb:us-east-1:465334783815:table/Context/stream/2018-09-01T15:08:42.064",
+            }
+        ]
+    }
+    sys.exit(lambda_handler(event, ""))

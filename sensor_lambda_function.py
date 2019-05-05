@@ -1,4 +1,3 @@
-import sys
 import logging
 from datetime import datetime
 from sensor.sensor_factory import SensorFactory
@@ -55,6 +54,8 @@ def lambda_handler(event, context):
 
 
 if __name__ == "IOTListner":
+    import sys
+    
     event = {
         "SensorID": "ecr_in1",
         "Value": 1,

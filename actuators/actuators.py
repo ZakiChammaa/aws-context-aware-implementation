@@ -1,18 +1,12 @@
 import json
 import boto3
 
-# from abc import ABC, abstractmethod
-
 
 class Actuator:
-    # @staticmethod
-    # def is_actuator(actuator_type):
-    #     return False
-
     def load_actuator_info(self, data_store, action, room_id):
         actuator_ids = []
         action_filter = {
-            "Action": {"AttributeValueList": [action], "ComparisonOperator": "IN"}
+            "Action": {"AttributeValueList": [str(action)], "ComparisonOperator": "IN"}
         }
 
         actions = data_store.get_many(action_filter, "Actions")
@@ -53,19 +47,3 @@ class Actuator:
 
     def get_actuator_status(self, actuator_id):
         return "ok"
-
-
-# class Temperature(Actuator):
-#     @staticmethod
-#     def is_actuator(actuator_type):
-#         return actuator_type.lower() == "temperature"
-
-# class Light(Actuator):
-#     @staticmethod
-#     def is_actuator(actuator_type):
-#         return actuator_type.lower() == "light"
-
-# class Drape(Actuator):
-#     @staticmethod
-#     def is_actuator(actuator_type):
-#         return actuator_type.lower() == "drape"
