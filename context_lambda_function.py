@@ -68,7 +68,7 @@ def lambda_handler(event, context):
 
             try:
                 data_store.put([context_instance], "Context")
-            except:
+            except Exception as e:
                 logger.error(
                     "The following exception occured when attempting to store the context instance: "
                     + str(e)
@@ -105,13 +105,12 @@ if __name__ == "ContextModule":
                 "awsRegion": "us-east-1",
                 "dynamodb": {
                     "ApproximateCreationDateTime": 1535301720,
-                    "Keys": {"SensorID": {"S": "ecr_in1"}, "Timestamp": {"S": now}},
+                    "Keys": {"SensorID": {"S": "ecr_out1"}, "Timestamp": {"S": now}},
                     "NewImage": {
-                        "SensorID": {"S": "ecr_in1"},
+                        "SensorID": {"S": "ecr_out1"},
                         "Value": {"N": "1"},
-                        "UserID": {"N": "1"},
                         "Timestamp": {"S": now},
-                        "SensorType": {"S": "door_in"},
+                        "SensorType": {"S": "door"},
                         "RoomID": {"S": "R1"},
                     },
                     "SequenceNumber": "74807100000000013576980822",

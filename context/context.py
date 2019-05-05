@@ -3,11 +3,11 @@ from datetime import datetime
 
 class Context:
     def __init__(self, sensor_reading):
+        self.sensor_id = sensor_reading["SensorID"]
         self.sensor_type = sensor_reading["SensorType"]
         self.sensor_value = sensor_reading["Value"]
         self.sensor_location = sensor_reading["RoomID"]
         self.sensor_timestamp = sensor_reading["Timestamp"]
-        self.user_id = sensor_reading["UserID"]
 
     def validate_sensor_reading_ttl(self, retention_policies):
         for policy in retention_policies:
@@ -54,9 +54,15 @@ class Context:
         return True
 
     def build_context(self):
+        time_key = ""
+        if "in" in self.sensor_id.lower():
+            time_key = "EntryTime"
+        elif "out" in self.sensor_id.lower():
+            time_key = "ExitTime"
+
         return {
             "Timestamp": self.sensor_timestamp,
-            "SensorType": self.sensor_type.lower(),
+            time_key: self.sensor_timestamp,
             "RoomID": self.sensor_location,
-            "Value": self.sensor_value,
+            "UserID": self.sensor_value,
         }
