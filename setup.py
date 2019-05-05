@@ -6,5 +6,5 @@ setup(
     author="Zaki Chammaa",
     description="Architecture for context-aware systems",
     keywords=["iot", "sensor", "context"],
-    packages=find_packages('.', exclude=["tests", "tests.*"])
+    packages=find_packages(".", exclude=["tests", "tests.*"]),
 )

@@ -1,6 +1,6 @@
 __pycache__/
 .vscode/
-virtual/
+awsenv/
 actuators/__pycache__/
 context/__pycache__/
 data_store/__pycache__/
