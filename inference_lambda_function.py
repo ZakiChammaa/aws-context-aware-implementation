@@ -55,11 +55,11 @@ def lambda_handler(event, context):
         if preferences:
             try:
                 logger.info("Running inference engine with the current preferences...")
-                inferred_data = {
+                inferred_data = [{
                     "temperature": int(preferences["Temperature"]),
                     "light": preferences["Light"].lower(),
                     "drape": preferences["Drape"].lower(),
-                }
+                }]
                 logger.info("Inference engine run successfully!")
             except Exception as e:
                 logger.error(
