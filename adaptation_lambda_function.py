@@ -17,10 +17,10 @@ def lambda_handler(event, context):
 
     for preferences in event:
         logger.info("Processing inferred data...")
-        for _, value in preferences.items():
+        for preference, value in preferences.items():
             actuator_obj = Actuator()
 
-            logger.info("Loading actuator information...")
+            logger.info(f"Loading {preference} actuator information in room R1...")
             actuator_info = {}
             try:
                 actuator_info = actuator_obj.load_actuator_info(
@@ -28,15 +28,15 @@ def lambda_handler(event, context):
                 )[0]
             except Exception as e:
                 logger.error(
-                    "The following exception occured while loading the actuator information: "
+                    f"The following exception occured while loading the {preference} actuator information in room R1: "
                     + str(e)
                 )
 
             current_state = actuator_info["CurrentState"]
+            actuator_id = actuator_info["ActuatorID"]
             if current_state != value:
-                logger.info("Sending command to actuator...")
+                logger.info(f"Updating actuator {actuator_id} with value {value}...")
                 try:
-                    actuator_id = actuator_info["ActuatorID"]
                     actuator_obj.connect(AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY)
                     actuator_obj.send_command(actuator_id, actuator_info["Command"])
                     data_store.update(
@@ -44,11 +44,11 @@ def lambda_handler(event, context):
                     )
                 except Exception as e:
                     logger.error(
-                        "The following exception occured while sending the command to the actuator: "
+                        f"The following exception occured while sending the command to actuator {actuator_id}: "
                         + str(e)
                     )
             else:
-                logger.info("Actuator does not need to be updated.")
+                logger.info(f"Actuator {actuator_id} does not need to be updated.")
 
 
 if __name__ == "ReactionModule":
